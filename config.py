@@ -1,37 +1,98 @@
 """
 Configurações centralizadas da aplicação
 """
+
 import os
-from dotenv import load_dotenv
+import streamlit as st
+from pathlib import Path
 
-# Carregar variáveis de ambiente
-load_dotenv()
 
-# Configurações do Supabase
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-# Configurações de Autenticação
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
+# ==============================
+# Loader inteligente de secrets
+# ==============================
 
-# Configurações da Aplicação
+def load_local_env():
+    """
+    Carrega .env relativo ao arquivo config.py
+    """
+    env_path = Path(__file__).parent.parent / ".env"
+
+    if env_path.exists():
+        try:
+            from dotenv import load_dotenv
+            load_dotenv(dotenv_path=env_path)
+        except ImportError:
+            pass
+
+
+def get_secret(key: str):
+    """
+    Prioridade:
+    1 - Streamlit Secrets (produção)
+    2 - Variável de ambiente / .env (local)
+    """
+    try:
+        return st.secrets[key]
+    except:
+        return os.getenv(key)
+
+
+# Carrega .env apenas local
+load_local_env()
+
+
+# ==============================
+# Supabase
+# ==============================
+
+SUPABASE_URL = get_secret("SUPABASE_URL")
+SUPABASE_KEY = get_secret("SUPABASE_KEY")
+
+
+# ==============================
+# Autenticação
+# ==============================
+
+ADMIN_PASSWORD = get_secret("ADMIN_PASSWORD")
+
+
+# ==============================
+# App Config
+# ==============================
+
 APP_TITLE = "🏆 Cartola FC - Premiação"
 APP_ICON = "🏆"
 
-# Configurações de Premiação (valores padrão)
+
+# ==============================
+# Premiações padrão
+# ==============================
+
 PREMIACOES_PADRAO = {
     1: 45.00,
     2: 30.00,
     3: 20.00
 }
 
-# Número de rodadas do campeonato
+
+# ==============================
+# Campeonato
+# ==============================
+
 NUM_RODADAS = 38
 
-# Status possíveis das rodadas
-STATUS_RODADAS = ["aberta", "em_andamento", "fechada"]
+STATUS_RODADAS = [
+    "aberta",
+    "em_andamento",
+    "fechada"
+]
 
-# Meses do ano (para filtros)
+
+# ==============================
+# Meses
+# ==============================
+
 MESES = {
     1: "Janeiro",
     2: "Fevereiro",
